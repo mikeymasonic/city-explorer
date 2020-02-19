@@ -5,15 +5,18 @@ const app = express();
 const darkSkyData = require('./data/darksky.json');
 
 const geoData = require('./data/geo.json');
+const geoParse = geoData[0];
 
 // console.log(geoData[0].display_name);
+
 
 app.get('/location/:lat/:lon/', (req, res) => {
     res.json({
         search_query: 'whatever',
         formatted_query: 'other-thing',
-        lat: geoData[0].lat,
-        lon: geoData[0].lon
+        location_name: geoParse.display_name,
+        lat: geoParse.lat,
+        lon: geoParse.lon
     });
 });
 
@@ -42,7 +45,10 @@ app.get('*', (req, res) => {
     });
 });
 
-app.listen(3000, () => { console.log('running . . .')});
+// app.listen(3000, () => { console.log('running . . .')});
 
+module.exports = {
+    app: app,
+};
 
 
