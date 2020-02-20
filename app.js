@@ -65,7 +65,7 @@ app.get('/weather', async(req, res) => {
     }
 });
 
-app.get('/yelp', async(req, res, next) => {
+app.get('/reviews', async(req, res, next) => {
     try {
         const yelpStuff = await request
             .get(`https://api.yelp.com/v3/businesses/search?term=restaurants&latitude=${lat}&longitude=${lng}`)
@@ -86,11 +86,9 @@ app.get('/yelp', async(req, res, next) => {
         next(err);
     }
 });
-http://api.eventful.com/json/events/search?app_key=tGSWp4mh6scdRdfG&where=45.5234211,-122.6809008&within=25
+
 app.get('/events', async(req, res) => {
     try {
-        // lat = 32.746682;
-        // lng = -117.162741;
         const eventful = await request
             .get(`http://api.eventful.com/json/events/search?app_key=${process.env.EVENTFUL_API_KEY}&where=${lat},${lng}&within=25`);
         const body = JSON.parse(eventful.text);
@@ -98,13 +96,57 @@ app.get('/events', async(req, res) => {
             return {
                 link: event.url,
                 name: event.title,
-                date: event.start_time,
-                summary: event.description,
+                event_date: event.start_time,
+                summary: event.description === null ? 'N/A' : event.description,
             };
         });
         res.json(eventStuff);
     } catch (err) {
         res.status(500).send('Sorry something went wrong, please try again');
+    }
+});
+
+// app.get('/events', async(req, res, next) => {
+//     try {
+//         const eventful = await request
+//             .get(`http://api.eventful.com/json/events/search?app_key=${process.env.EVENTFUL_API_KEY}&where=${latitude},${longitude}&within=25`); 
+//         const eventfulObject = JSON.parse(eventful.text);
+//         const eventfulMap = eventfulObject.events.event.map(event => {
+//             return {
+//                 link: event.url,
+//                 name: event.title,
+//                 event_date: event.start_time,
+//                 summary: event.description === null ? 'N/A' : event.description,
+//             };
+//         });
+//         res.json(eventfulMap);
+//     } catch (err) {
+//         next(err);
+//     }
+// });
+
+app.get('/trails', async(req, res, next) => {
+    try {
+        const trails = await request
+            .get(`https://www.hikingproject.com/data/get-trails?lat=${lat}&lon=${lng}&maxDistance=10&key=${process.env.TRAILS_API_KEY}`); 
+        const trailsObject = JSON.parse(trails.text);
+        const trailsMap = trailsObject.trails.map(trail => {
+            return {
+                name: trail.name,
+                location: trail.location,
+                length: trail.length,
+                stars: trail.stars,
+                star_votes: trail.starVotes,
+                summary: trail.summary,
+                trail_url: trail.url,
+                conditions: trail.conditionDetails,
+                condition_date: trail.conditionDate.split(' ')[0],
+                condition_time: trail.conditionDate.split(' ')[1]
+            };
+        });    
+        res.json(trailsMap);
+    } catch (err) {
+        next(err);
     }
 });
 
