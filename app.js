@@ -65,8 +65,27 @@ app.get('/weather', async(req, res) => {
     }
 });
 
-// let theDate = new Date(weather.currently.time * 1000);
-// let dateString = theDate.toUTCString();
+app.get('/yelp', async(req, res, next) => {
+    try {
+        const yelpStuff = await request
+            .get(`https://api.yelp.com/v3/businesses/search?term=restaurants&latitude=${lat}&longitude=${lng}`)
+            .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`);
+        const yelpObject = yelpStuff.body;
+        const yelpBusinesses = yelpObject.businesses;
+        const yelpMap = yelpBusinesses.map(business => {
+            return {
+                name: business.name,
+                image_url: business.image_url,
+                price: business.price,
+                rating: business.rating,
+                url: business.url
+            };
+        });
+        res.json(yelpMap);
+    } catch (err) {
+        next(err);
+    }
+});
 
 app.get('*', (req, res) => {
     res.send({
