@@ -1,8 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
-// const weather = require('./data/darksky.json');
-// const geoData = require('./data/geo.json');
 const cors = require('cors');
 const request = require('superagent');
 
@@ -24,9 +22,7 @@ app.get('/location', async(req, res, next) => {
 
         const firstResult = cityData.body[0];
         
-        // console.log(locationData.body);
         console.log('using location . . .', location);
-        // const cityData = geoData.results[0];
 
         lat = firstResult.lat;
         lng = firstResult.lon;
@@ -65,7 +61,7 @@ app.get('/weather', async(req, res) => {
     }
 });
 
-app.get('/reviews', async(req, res, next) => {
+app.get('/reviews', async(req, res) => {
     try {
         const yelpStuff = await request
             .get(`https://api.yelp.com/v3/businesses/search?term=restaurants&latitude=${lat}&longitude=${lng}`)
@@ -83,7 +79,7 @@ app.get('/reviews', async(req, res, next) => {
         });
         res.json(yelpMap);
     } catch (err) {
-        next(err);
+        res.status(500).send('Sorry something went wrong, please try again');
     }
 });
 
@@ -106,25 +102,6 @@ app.get('/events', async(req, res) => {
     }
 });
 
-// app.get('/events', async(req, res, next) => {
-//     try {
-//         const eventful = await request
-//             .get(`http://api.eventful.com/json/events/search?app_key=${process.env.EVENTFUL_API_KEY}&where=${latitude},${longitude}&within=25`); 
-//         const eventfulObject = JSON.parse(eventful.text);
-//         const eventfulMap = eventfulObject.events.event.map(event => {
-//             return {
-//                 link: event.url,
-//                 name: event.title,
-//                 event_date: event.start_time,
-//                 summary: event.description === null ? 'N/A' : event.description,
-//             };
-//         });
-//         res.json(eventfulMap);
-//     } catch (err) {
-//         next(err);
-//     }
-// });
-
 app.get('/trails', async(req, res, next) => {
     try {
         const trails = await request
@@ -139,40 +116,16 @@ app.get('/trails', async(req, res, next) => {
                 star_votes: trail.starVotes,
                 summary: trail.summary,
                 trail_url: trail.url,
-                conditions: trail.conditionDetails,
+                conditions: trail.conditionStatus,
                 condition_date: trail.conditionDate.split(' ')[0],
                 condition_time: trail.conditionDate.split(' ')[1]
             };
         });    
         res.json(trailsMap);
     } catch (err) {
-        next(err);
+        res.status(500).send('Sorry something went wrong, please try again');
     }
 });
-
-// app.get('/eventful', async(req, res, next) => {
-//     try {
-//         const yelpStuff = await request
-            
-//             .get(`http://api.eventful.com/json/events/search?app_key=tGSWp4mh6scdRdfG&where=${lat},${lng}&within=25`)
-            
-//             .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`);
-//         const yelpObject = yelpStuff.body;
-//         const yelpBusinesses = yelpObject.businesses;
-//         const yelpMap = yelpBusinesses.map(business => {
-//             return {
-//                 name: business.name,
-//                 image_url: business.image_url,
-//                 price: business.price,
-//                 rating: business.rating,
-//                 url: business.url
-//             };
-//         });
-//         res.json(yelpMap);
-//     } catch (err) {
-//         next(err);
-//     }
-// });
 
 app.get('*', (req, res) => {
     res.send({
