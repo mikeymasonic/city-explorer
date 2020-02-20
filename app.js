@@ -86,6 +86,51 @@ app.get('/yelp', async(req, res, next) => {
         next(err);
     }
 });
+http://api.eventful.com/json/events/search?app_key=tGSWp4mh6scdRdfG&where=45.5234211,-122.6809008&within=25
+app.get('/events', async(req, res) => {
+    try {
+        // lat = 32.746682;
+        // lng = -117.162741;
+        const eventful = await request
+            .get(`http://api.eventful.com/json/events/search?app_key=${process.env.EVENTFUL_API_KEY}&where=${lat},${lng}&within=25`);
+        const body = JSON.parse(eventful.text);
+        const eventStuff = body.events.event.map(event => {
+            return {
+                link: event.url,
+                name: event.title,
+                date: event.start_time,
+                summary: event.description,
+            };
+        });
+        res.json(eventStuff);
+    } catch (err) {
+        res.status(500).send('Sorry something went wrong, please try again');
+    }
+});
+
+// app.get('/eventful', async(req, res, next) => {
+//     try {
+//         const yelpStuff = await request
+            
+//             .get(`http://api.eventful.com/json/events/search?app_key=tGSWp4mh6scdRdfG&where=${lat},${lng}&within=25`)
+            
+//             .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`);
+//         const yelpObject = yelpStuff.body;
+//         const yelpBusinesses = yelpObject.businesses;
+//         const yelpMap = yelpBusinesses.map(business => {
+//             return {
+//                 name: business.name,
+//                 image_url: business.image_url,
+//                 price: business.price,
+//                 rating: business.rating,
+//                 url: business.url
+//             };
+//         });
+//         res.json(yelpMap);
+//     } catch (err) {
+//         next(err);
+//     }
+// });
 
 app.get('*', (req, res) => {
     res.send({
